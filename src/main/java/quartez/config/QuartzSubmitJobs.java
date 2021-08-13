@@ -17,6 +17,18 @@ import quartez.jobs.MemberStatsJob;
  */
 @Configuration
 public class QuartzSubmitJobs {
+    //این یک cron experssion است
+    //علامت / به معنی این است که هر 5 دقیقه تکرار شود
+    //از چپ به راست ثانبه-دقیقه-ساعت -روز ماه-ماه-روز هفته-سال
+    //Seconds
+    //Minutes
+    //Hours
+    //Day-of-Month
+    //Month
+    //Day-of-Week
+    //Year (optional field)
+    //علامت " به معنی تکرار است-مثلا هر روز هفته-هر ماه
+    //علامت ؟ برای فیلد های Day-of-Month و Day-of-Week مجاز است
     private static final String CRON_EVERY_FIVE_MINUTES = "0 0/5 * ? * * *";
 
     @Bean(name = "memberStats")
@@ -25,8 +37,8 @@ public class QuartzSubmitJobs {
     }
 
     @Bean(name = "memberStatsTrigger")
-    public SimpleTriggerFactoryBean triggerMemberStats(@Qualifier("memberStats") JobDetail jobDetail) {
-        return QuartzConfig.createTrigger(jobDetail, 60000, "Member Statistics Trigger");
+    public SimpleTriggerFactoryBean simpleTriggerFactoryMemberStats(@Qualifier("memberStats") JobDetail jobDetail) {
+        return QuartzConfig.createSimpleTriggerFactory(jobDetail, 60000, "Member Statistics Trigger");
     }
 
     @Bean(name = "memberClassStats")

@@ -14,4 +14,5 @@ import java.util.List;
 
 public interface ClassRepository extends JpaRepository<MemberClass,Long> , JpaSpecificationExecutor {
     List<MemberClass> findAllByNameContainsIgnoreCase(String searchString);
+    //این متد در jpa-data هستند
 }

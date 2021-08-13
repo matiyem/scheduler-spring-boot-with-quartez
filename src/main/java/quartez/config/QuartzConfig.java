@@ -2,10 +2,7 @@ package quartez.config;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
-import org.quartz.CronTrigger;
-import org.quartz.JobDetail;
-import org.quartz.SimpleTrigger;
-import org.quartz.Trigger;
+import org.quartz.*;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,6 +13,9 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+
+import static org.quartz.CronScheduleBuilder.dailyAtHourAndMinute;
+import static org.quartz.TriggerBuilder.newTrigger;
 
 
 /**
@@ -40,6 +40,9 @@ public class QuartzConfig {
 
     @Bean
     public SpringBeanJobFactory springBeanJobFactory() {
+        //از این متد برای اپلای کردن دیتا از قبیل trigger applicationContext,job data map,trigger data map استفاده میشود
+        //application context زیر کلاس bean factory است
+        //application context برای instance,configuration,assemble کردن bean ها استفاده میشود
         AutowiringSpringBeanJobFactory jobFactory = new AutowiringSpringBeanJobFactory();
         jobFactory.setApplicationContext(applicationContext);
         return jobFactory;
@@ -47,9 +50,11 @@ public class QuartzConfig {
 
     @Bean
     public SchedulerFactoryBean scheduler(Trigger...triggers) {
+        //این متد یک  Quartz Scheduler میسازد و کانفیگ میکند.life-cycle  آن به عنوان قسمتی از application context است
         SchedulerFactoryBean schedulerFactory = new SchedulerFactoryBean();
 
         Properties properties = new Properties();
+
         properties.setProperty("org.quartz.scheduler.instanceName", "MyInstanceName");
         properties.setProperty("org.quartz.scheduler.instanceId", "Instance1");
 
@@ -66,21 +71,23 @@ public class QuartzConfig {
         return schedulerFactory;
     }
 
-    static SimpleTriggerFactoryBean createTrigger(JobDetail jobDetail, long pollFrequencyMs, String triggerName) {
+    static SimpleTriggerFactoryBean createSimpleTriggerFactory(JobDetail jobDetail, long pollFrequencyMs, String triggerName) {
+        //این متد برای اجرای jobDetail ساخته شده است
+
         Map map = new HashMap();
         map.put("jobDetail", jobDetail);
         map.put("pollFrequencyMs", pollFrequencyMs);
         map.put("triggerName", triggerName);
         log.debug("createTrigger(jobDetail={}, pollFrequencyMs={}, triggerName={})", map);
 
-        SimpleTriggerFactoryBean factoryBean=new SimpleTriggerFactoryBean();
+
+        SimpleTriggerFactoryBean factoryBean=new SimpleTriggerFactoryBean();// زمانی از این نوع استفاده میکنیم که میخوام همین الان و بصورت نامحدود اجرا شود
         factoryBean.setJobDetail(jobDetail);
         factoryBean.setStartDelay(0L);
         factoryBean.setRepeatInterval(pollFrequencyMs);
         factoryBean.setName(triggerName);
-        factoryBean.setRepeatCount(SimpleTrigger.REPEAT_INDEFINITELY);
-        factoryBean.setMisfireInstruction(SimpleTrigger.MISFIRE_INSTRUCTION_RESCHEDULE_NEXT_WITH_REMAINING_COUNT);
-
+        factoryBean.setRepeatCount(SimpleTrigger.REPEAT_INDEFINITELY);// تعداد تکرار مشخص میشود که در اینجا نامحدود در نظر گرفته شده است
+        factoryBean.setMisfireInstruction(SimpleTrigger.MISFIRE_INSTRUCTION_RESCHEDULE_NEXT_WITH_REMAINING_COUNT);//در اینجا مشخص میکند اگر trigger اجرا نشد چه کاری را انجام دهد
         return factoryBean;
     }
     static CronTriggerFactoryBean createCronTrigger(JobDetail jobDetail ,String cronExpression, String triggerName){
@@ -89,7 +96,6 @@ public class QuartzConfig {
         map.put("cronExpression", cronExpression);
         map.put("triggerName", triggerName);
         log.debug("createTrigger(jobDetail={}, pollFrequencyMs={}, triggerName={})", map);
-
         Calendar calendar=Calendar.getInstance();
         calendar.set(Calendar.SECOND,0);
         calendar.set(Calendar.MILLISECOND,0);
