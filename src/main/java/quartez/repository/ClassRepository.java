@@ -11,8 +11,11 @@ import java.util.List;
  * Date: 8/8/2021
  * Time: 2:15 PM
  */
-
+//JpaRepository  دارای تمام متدهای اینترفیس های CrudRepository  وPagingAndSortingRepository است
+//بصورت عمده توابع crud را ارایه میدهد
 public interface ClassRepository extends JpaRepository<MemberClass,Long> , JpaSpecificationExecutor {
+
+
     List<MemberClass> findAllByNameContainsIgnoreCase(String searchString);
     //این متد در jpa-data هستند
 }
